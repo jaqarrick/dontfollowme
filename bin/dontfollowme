@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+'use strict';
+
+const cli = require('../src');
+
+process.title = 'dontfollowme';
+
+cli.main(process.argv);
