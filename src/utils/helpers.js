@@ -31,8 +31,16 @@ const determineTypeOfFollowFromFileName = (fileType) => {
     }
 };
 
+parseData = (filePath) => {
+    const data = fs.readFileSync(filePath, (err) => {
+        console.error(err);
+    });
+    return JSON.parse(data);
+};
+
 module.exports = {
     getAllItemsFromFeed,
     writeDataToFile,
     determineTypeOfFollowFromFileName,
+    parseData,
 };

@@ -1,46 +1,49 @@
 const fs = require("fs");
 const getClient = require("./client");
-const { getAllItemsFromFeed, writeDataToFile } = require("./helpers");
-const path = "./data/followers.json";
+const {
+    getAllItemsFromFeed,
+    writeDataToFile,
+    parseData,
+} = require("./helpers");
 
-const saveFollowers = (followers) => {
+const followersPath = "./data/followers.json";
+const followingPath = "./data/following.json";
+
+const getFollowing = async (igClient) => {
+    // check if we've already saved this list
     try {
-        if (fs.existsSync(path)) {
+        if (fs.existsSync(followingPath)) {
             //file exists
-            console.log("Followers data already saved... overwrite? (y/n)");
+            return parseData(followingPath);
         } else {
-            fs.writeFile(path, JSON.stringify(followers), (err) => {
-                if (err) {
-                    console.error(err);
-                }
-            });
+            console.log("Followers data does not exist yet. Fetching it now");
+            const followingFeed = ig.feed.accountFollowing(
+                ig.state.cookieUserId,
+            );
+
+            const following = await getAllItemsFromFeed(followingFeed);
+            writeDataToFile("following", following);
+            return null;
         }
     } catch (err) {
-        console.error(err);
+        throw err;
     }
-};
-
-const parseFollowers = () => {
-    const data = fs.readFileSync(path, (err) => {
-        console.error(err);
-    });
-    return JSON.parse(data);
 };
 
 const getFollowers = async (igClient) => {
     // check if we've already saved this list
     try {
-        if (fs.existsSync(path)) {
+        if (fs.existsSync(followersPath)) {
             //file exists
-            return parseFollowers();
+            return parseData(followersPath);
         } else {
             console.log("Followers data does not exist yet. Fetching it now");
             const followersFeed = igClient.feed.accountFollowers(
                 igClient.state.cookieUserId,
             );
-            followers = await getAllItemsFromFeed(followersFeed);
+            const followers = await getAllItemsFromFeed(followersFeed);
             writeDataToFile("followers", followers);
-            return null;
+            return followers;
         }
     } catch (err) {
         throw err;
@@ -77,14 +80,6 @@ const compareFollows = async (igClient) => {
     // First get the saved list of followers
     console.log("Getting saved followers");
     const savedFollowers = await getFollowers(igClient);
-
-    if (!savedFollowers) {
-        console.log(
-            "Followers can't be compared because you didn't have any saved followers. Try again later.",
-        );
-        return;
-    }
-
     console.log(`You have ${savedFollowers.length} saved followers`);
     // Now get up to date followers list
     console.log("Getting current followers");
@@ -101,8 +96,18 @@ const compareFollows = async (igClient) => {
         diffFollowers(savedFollowers, currentFollowers),
         properties,
     );
-    writeDataToFile("new-followers", newFollowers);
-    writeDataToFile("new-unfollowers", newUnfollowers);
+
+    return { follows: newFollowers, unfollows: newUnfollowers };
+};
+
+const getNotFollowing = async (igClient) => {
+    const following = await getFollowing(igClient);
+    const followers = await getFollowers(igClient);
+
+    const notFollowing = diffFollowers(following, followers);
+    const properties = ["username", "profile_pic_url"];
+    console.log("Determining new follows");
+    return selectPropsFromFollowers(notFollowing, properties);
 };
 
 const getCurrentFollowers = async (igClient) => {
@@ -114,31 +119,6 @@ const getCurrentFollowers = async (igClient) => {
 };
 
 module.exports = {
-    saveFollowers,
-    getFollowers,
     compareFollows,
+    getNotFollowing,
 };
-
-// const newFollowers = currentFollowers
-//     .filter(
-//         (current) =>
-//             !savedFollowers.some(
-//                 (saved) => saved.username == current.username
-//             )
-//     )
-//     .map(({ username, profile_pic_url }) => ({
-//         username,
-//         profile_pic_url,
-//     }));
-
-// const newUnfollowers = savedFollowers
-//     .filter(
-//         (saved) =>
-//             !currentFollowers.some(
-//                 (current) => saved.username == current.username
-//             )
-//     )
-//     .map(({ username, profile_pic_url }) => ({
-//         username,
-//         profile_pic_url,
-//     }));

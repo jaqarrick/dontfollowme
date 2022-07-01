@@ -1,9 +1,7 @@
 require("dotenv").config();
 const process = require("process");
-const { compareFollows } = require("./utils/followers");
-
+const { compareFollows, getNotFollowing } = require("./utils/follows");
 const { renderProfiles } = require("./views/profile");
-const { saveFollowing } = require("./utils/following");
 const getClient = require("./utils/client");
 
 const { commands } = require("./constants");
@@ -32,11 +30,19 @@ const executeCommand = async (argv) => {
 
     switch (command) {
         case commands.COMPARE:
-            await compareFollows(igClient);
-            await renderProfiles("new-followers");
-            await renderProfiles("new-unfollowers");
+            const {follows, unfollows} = await compareFollows(igClient);
+            await renderProfiles(follows, {
+              label: "follower"
+            });
+            await renderProfiles(unfollows, {
+              label: "unfollower"
+            });
             break;
         case commands.NOTFRIENDS:
+            const  notFollowing  = await getNotFollowing(igClient)
+            await renderProfiles(notFollowing, {
+              label: "notfollowing"
+            })
             break;
         default:
             return "Invalid command!";
