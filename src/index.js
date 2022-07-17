@@ -22,9 +22,9 @@ async function main() {
     })();
 }
 
-const executeCommand = async (argv) => {
+const executeCommand = async () => {
 
-    const command = process.argv[2];
+    const command = process.argv[2].toUpperCase();
 
     if (!commands[command]) {
         throw "Invalid Command"
