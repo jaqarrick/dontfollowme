@@ -7,12 +7,12 @@ const { chunkArray, determineNumChunks } = require("./helpers");
 const terminalImagePromise = import("terminal-image");
 
 const printProfile = async (url, username, label) => {
+    console.log(username);
     try {
         const terminalImage = await terminalImagePromise;
         const { statusCode, data } = await curly.get(url);
 
         if (statusCode !== 200) throw "Failed to fetch profile url";
-        console.log(username);
         console.log(label);
         console.log(
             await terminalImage.default.buffer(data, {
