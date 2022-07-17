@@ -23,10 +23,15 @@ async function main() {
 }
 
 const executeCommand = async (argv) => {
+
+    const command = process.argv[2];
+
+    if (!commands[command]) {
+        throw "Invalid Command"
+    }
     console.log("Initializing Instagram client");
     const igClient = await getClient();
     console.log("Client initialized");
-    const command = process.argv[2];
 
     switch (command) {
         case commands.COMPARE:
@@ -45,6 +50,6 @@ const executeCommand = async (argv) => {
             })
             break;
         default:
-            return "Invalid command!";
+            return;
     }
 };
