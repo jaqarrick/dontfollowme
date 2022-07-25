@@ -24,7 +24,11 @@ async function main() {
 
 const executeCommand = async () => {
 
-    const command = process.argv[2].toUpperCase();
+    const command = process.argv[2]?.toUpperCase();
+    
+    if(!command){
+        throw "No command specified"
+    }
 
     if (!commands[command]) {
         throw "Invalid Command"
@@ -36,9 +40,11 @@ const executeCommand = async () => {
     switch (command) {
         case commands.COMPARE:
             const {follows, unfollows} = await compareFollows(igClient);
+            console.log("rendering new followers")
             await renderProfiles(follows, {
               label: "follower"
             });
+            console.log("rendering new unfollowers")
             await renderProfiles(unfollows, {
               label: "unfollower"
             });

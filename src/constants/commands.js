@@ -1,6 +1,6 @@
 const commands = {
-    COMPARE: "compare",
-    NOTFRIENDS: "notfriends",
+    COMPARE: "COMPARE",
+    NOTFRIENDS: "NOTFRIENDS",
 };
 
 module.exports = commands;
