@@ -17,8 +17,8 @@ const getFollowing = async (igClient) => {
             return parseData(followingPath);
         } else {
             console.log("Followers data does not exist yet. Fetching it now");
-            const followingFeed = ig.feed.accountFollowing(
-                ig.state.cookieUserId,
+            const followingFeed = igClient.feed.accountFollowing(
+                igClient.state.cookieUserId,
             );
 
             const following = await getAllItemsFromFeed(followingFeed);
@@ -104,6 +104,9 @@ const getNotFollowing = async (igClient) => {
     const following = await getFollowing(igClient);
     const followers = await getFollowers(igClient);
 
+    if(!followers || !following){
+        throw "Something went wrong and followers could not be compared. Try again."
+    }
     const notFollowing = diffFollowers(following, followers);
     const properties = ["username", "profile_pic_url"];
     console.log("Determining new follows");
